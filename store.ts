@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 
-// Types
 interface UserMessage {
   id: string;
   isUser: true;
@@ -41,6 +40,13 @@ export interface Chat {
   messagePairs: MessagePair[];
 }
 
+interface SummarizationPreferences {
+  defaultType: "key-points" | "tl;dr" | "teaser" | "headline";
+  defaultLength: "short" | "medium" | "long";
+  defaultFormat: "markdown" | "plain";
+  customPrompt?: string;
+}
+
 interface ChatState {
   chats: Chat[];
   currentChatId: string | null;
@@ -75,9 +81,12 @@ interface ChatState {
     responseId: string,
     options?: { type?: "key-points" | "tl;dr" | "teaser" | "headline" }
   ) => Promise<void>;
+  summarizationPreferences: SummarizationPreferences;
+  updateSummarizationPreferences: (
+    prefs: Partial<SummarizationPreferences>
+  ) => void;
 }
 
-// Create store
 const useChatStore = create<ChatState>()(
   persist(
     (set, get) => ({
@@ -92,8 +101,22 @@ const useChatStore = create<ChatState>()(
         isSummarizing: false,
         currentProcessingId: null
       },
+      summarizationPreferences: {
+        defaultType: "key-points",
+        defaultLength: "medium",
+        defaultFormat: "markdown"
+      },
       translationService: null,
-
+      updateSummarizationPreferences: (
+        prefs: Partial<SummarizationPreferences>
+      ) => {
+        set((state) => ({
+          summarizationPreferences: {
+            ...state.summarizationPreferences,
+            ...prefs
+          }
+        }));
+      },
       setTranslationService: (service) => {
         set({ translationService: service });
       },
@@ -151,7 +174,6 @@ const useChatStore = create<ChatState>()(
         const state = get();
         state.setMessageProcessingState(true);
 
-        // Create user message
         const userMessageId = uuidv4();
         const userMessage: UserMessage = {
           id: userMessageId,
@@ -159,7 +181,6 @@ const useChatStore = create<ChatState>()(
           text
         };
 
-        // Detect language
         const detectedResult = await state?.translationService?.detectLanguage(
           text
         );
@@ -171,7 +192,6 @@ const useChatStore = create<ChatState>()(
           };
         }
 
-        // Create response message
         const responseId = uuidv4();
         const responseMessage: ResponseMessage = {
           id: responseId,
@@ -185,7 +205,6 @@ const useChatStore = create<ChatState>()(
         };
 
         set((state) => {
-          // Handle case when there's no current chat
           const chatIdToUse = state.currentChatId;
           if (!chatIdToUse) {
             const newChatId = uuidv4();
@@ -206,7 +225,6 @@ const useChatStore = create<ChatState>()(
           );
 
           if (!chatExists) {
-            // Add new chat with the current ID
             return {
               ...state,
               chats: [
@@ -219,7 +237,6 @@ const useChatStore = create<ChatState>()(
             };
           }
 
-          // Add to existing chat
           return {
             ...state,
             chats: state.chats.map((chat) =>
@@ -267,7 +284,6 @@ const useChatStore = create<ChatState>()(
           return;
         }
 
-        // Perform translation
         const translatedText = await state.translationService.translate(
           messagePair.userMessage.text,
           sourceLanguage,
@@ -304,7 +320,11 @@ const useChatStore = create<ChatState>()(
 
       summarize: async (
         responseId: string,
-        options?: { type?: "key-points" | "tl;dr" | "teaser" | "headline" }
+        options?: {
+          type?: "key-points" | "tl;dr" | "teaser" | "headline";
+          length?: "short" | "medium" | "long";
+          format?: "markdown" | "plain";
+        }
       ) => {
         const state = get();
         if (!state.translationService) return;
@@ -329,11 +349,13 @@ const useChatStore = create<ChatState>()(
         const messagePair = currentChat.messagePairs[messagePairIndex];
         const text = messagePair.userMessage.text;
 
-        // Perform summarization
+        const { summarizationPreferences } = state;
+
         const summaryResult = await state.translationService.summarize(text, {
-          type: options?.type,
-          format: "markdown",
-          length: "medium"
+          type: options?.type || summarizationPreferences.defaultType,
+          format: options?.format || summarizationPreferences.defaultFormat,
+          length: options?.length || summarizationPreferences.defaultLength,
+          customPrompt: summarizationPreferences.customPrompt
         });
 
         set((state) => ({
@@ -368,7 +390,8 @@ const useChatStore = create<ChatState>()(
       name: "chat-storage",
       partialize: (state) => ({
         chats: state.chats,
-        currentChatId: state.currentChatId
+        currentChatId: state.currentChatId,
+        summarizationPreferences: state.summarizationPreferences
       }),
       storage: createJSONStorage(() => localStorage)
     }
@@ -376,3 +399,37 @@ const useChatStore = create<ChatState>()(
 );
 
 export default useChatStore;
+
+interface UserState {
+  user: {
+    name: string;
+    email: string;
+    avatar: string;
+  } | null;
+
+  setUser: (user: UserState["user"]) => void;
+  updateUser: (updates: Partial<NonNullable<UserState["user"]>>) => void;
+  logout: () => void;
+}
+
+export const useUserStore = create<UserState>()(
+  persist(
+    (set) => ({
+      user: null,
+
+      setUser: (user) => set({ user }),
+
+      updateUser: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null
+        })),
+
+      logout: () => set({ user: null })
+    }),
+    {
+      name: "user-storage",
+      partialize: (state) => ({ user: state.user }),
+      storage: createJSONStorage(() => localStorage)
+    }
+  )
+);
