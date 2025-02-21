@@ -1,4 +1,4 @@
-"use client"; // Mark this as a Client Component
+"use client";
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -15,15 +15,16 @@ const Breadcrumbs = () => {
   const router = useRouter();
   const pathnames = pathname.split("/").filter((x) => x);
 
-  // Map dynamic segments to readable labels
-  const getBreadcrumbLabel = (segment: string) => {
+  const getBreadcrumbLabel = (segment: string, index: number) => {
     if (segment === "chat") {
       return "Chat";
+    }
+    if (pathnames[0] === "chat" && index === 1) {
+      return "Chat ID";
     }
     return segment;
   };
 
-  // Skip rendering "Home" if we're in the chat route
   const shouldShowHome = !pathname.startsWith("/chat");
 
   return (
@@ -51,14 +52,16 @@ const Breadcrumbs = () => {
         {pathnames.map((name, index) => {
           const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
           const isLast = index === pathnames.length - 1;
-          const label = getBreadcrumbLabel(name);
+          const label = getBreadcrumbLabel(name, index);
+
+          const isDynamicChatId = pathnames[0] === "chat" && index === 1;
 
           return (
             <React.Fragment key={routeTo}>
               {/* Only show separator if Home is visible or not the first item */}
               {(shouldShowHome || index > 0) && <BreadcrumbSeparator />}
               <BreadcrumbItem>
-                {isLast ? (
+                {isLast || isDynamicChatId ? (
                   <BreadcrumbPage>{label}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink

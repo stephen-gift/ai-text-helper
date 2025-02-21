@@ -11,7 +11,6 @@ import React, {
 } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-// Types definition
 interface UserMessage {
   id: string;
   isUser: true;
@@ -61,7 +60,6 @@ interface ChatState {
   };
 }
 
-// ChatContext Type
 interface ChatContextType {
   chatState: ChatState;
   handleSendMessage: (text: string) => Promise<void>;
@@ -81,13 +79,9 @@ interface ChatContextType {
   ) => void;
 }
 
-// Create ChatContext
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-// Provider component
-export const ChatProvider: React.FC<{ children: ReactNode }> = ({
-  children
-}) => {
+export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [chatState, setChatState] = useState<ChatState>({
     chats: [],
     currentChatId: null,
@@ -101,10 +95,8 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
 
   const { translate, detectLanguage, summarize } = useTranslation();
 
-  // Computed value for message processing state
   const isProcessingMessage = chatState.processingState.isProcessing;
 
-  // Update processing state
   const setMessageProcessingState = useCallback(
     (
       isProcessing: boolean,
@@ -124,13 +116,11 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     []
   );
 
-  // Handler for sending message
   const handleSendMessage = useCallback(
     async (text: string) => {
       if (!text.trim()) return;
       setMessageProcessingState(true);
 
-      // Create user message
       const userMessageId = uuidv4();
       const userMessage: UserMessage = {
         id: userMessageId,
@@ -138,7 +128,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         text
       };
 
-      // Detect language
       const detectedResult = await detectLanguage(text);
       if (detectedResult) {
         userMessage.detectedLanguage = {
@@ -148,7 +137,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         };
       }
 
-      // Create response message
       const responseId = uuidv4();
       const responseMessage: ResponseMessage = {
         id: responseId,
@@ -161,9 +149,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         }
       };
 
-      // Update state with new message pair
       setChatState((prevState) => {
-        // Handle case when there's no current chat
         if (!prevState.currentChatId) {
           const newChatId = uuidv4();
           return {
@@ -178,7 +164,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
           };
         }
 
-        // Add to existing chat
         return {
           ...prevState,
           chats: prevState.chats.map((chat) =>
@@ -200,12 +185,10 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     [detectLanguage, setMessageProcessingState]
   );
 
-  // Handler for translation
   const handleTranslate = useCallback(
     async (responseId: string, targetLanguage: string) => {
       setMessageProcessingState(true, "translating", responseId);
 
-      // Find the message pair containing this response
       const currentChat = chatState.chats.find(
         (c) => c.id === chatState.currentChatId
       );
@@ -222,7 +205,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Update processing state in the message
       setChatState((prevState) => ({
         ...prevState,
         chats: prevState.chats.map((chat) =>
@@ -255,14 +237,12 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Perform translation
       const translatedText = await translate(
         messagePair.userMessage.text,
         sourceLanguage,
         targetLanguage
       );
 
-      // Update state with translation
       setChatState((prevState) => ({
         ...prevState,
         chats: prevState.chats.map((chat) =>
@@ -294,7 +274,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     [chatState, translate, setMessageProcessingState]
   );
 
-  // Handler for summarization
   const handleSummarize = useCallback(
     async (
       responseId: string,
@@ -302,7 +281,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     ) => {
       setMessageProcessingState(true, "summarizing", responseId);
 
-      // Find the message pair containing this response
       const currentChat = chatState.chats.find(
         (c) => c.id === chatState.currentChatId
       );
@@ -319,7 +297,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Update processing state in the message
       setChatState((prevState) => ({
         ...prevState,
         chats: prevState.chats.map((chat) =>
@@ -348,14 +325,12 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
       const messagePair = currentChat.messagePairs[messagePairIndex];
       const text = messagePair.userMessage.text;
 
-      // Perform summarization
       const summaryResult = await summarize(text, {
         type: options?.type,
         format: "markdown",
         length: "medium"
       });
 
-      // Update state with summary
       setChatState((prevState) => ({
         ...prevState,
         chats: prevState.chats.map((chat) =>
@@ -387,14 +362,12 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     [chatState, summarize, setMessageProcessingState]
   );
 
-  // Persist chats to localStorage
   useEffect(() => {
     if (typeof window !== "undefined" && chatState.chats.length > 0) {
       localStorage.setItem("chat-history", JSON.stringify(chatState.chats));
     }
   }, [chatState.chats]);
 
-  // Load chats from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedChats = localStorage.getItem("chat-history");
@@ -413,7 +386,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // Context value
   const contextValue: ChatContextType = {
     chatState,
     handleSendMessage,
@@ -428,7 +400,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-// Custom hook for using chat context
 export const useChat = (): ChatContextType => {
   const context = useContext(ChatContext);
   if (context === undefined) {

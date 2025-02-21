@@ -1,6 +1,14 @@
 "use client";
 
-import { toast } from "@/hooks/use-toast";
+import {
+  DetectionResult,
+  LanguageDetectorInstance,
+  LanguageDetectorOptions,
+  SummarizationOptions,
+  SummarizationResult,
+  SummarizerInstance,
+  TranslatorInstance
+} from "@/types";
 import React, {
   createContext,
   useContext,
@@ -9,48 +17,7 @@ import React, {
   useCallback,
   ReactNode
 } from "react";
-
-// Types
-interface TranslatorInstance {
-  translate: (text: string) => Promise<string>;
-}
-
-interface LanguageDetectionResult {
-  detectedLanguage: string;
-  confidence: number;
-}
-
-interface LanguageDetectorInstance {
-  detect: (text: string) => Promise<LanguageDetectionResult[]>;
-}
-
-// interface SummarizationOptions {
-//   [key: string]: any; // Define specific summarization options if available
-// }
-
-interface SummarizationProgressEvent extends Event {
-  loaded: number;
-  total: number;
-}
-
-interface SummarizerInstance {
-  addEventListener: (
-    event: "downloadprogress",
-    callback: (event: SummarizationProgressEvent) => void
-  ) => void;
-  ready: Promise<void>;
-  summarize: (text: string, options?: { context?: string }) => Promise<string>;
-  summarizeStreaming?: (
-    text: string,
-    options?: { context?: string }
-  ) => AsyncIterable<string>;
-}
-
-interface DetectionResult {
-  detectedLanguage: string;
-  confidence: number;
-  humanReadableName: string;
-}
+import { toast } from "sonner";
 
 interface TranslationAPI {
   createTranslator: (options: {
@@ -64,25 +31,6 @@ interface CustomWindow extends Window {
 }
 
 declare const window: CustomWindow;
-
-interface SummarizationOptions {
-  sharedContext?: string;
-  type?: "key-points" | "tl;dr" | "teaser" | "headline";
-  format?: "markdown" | "plain-text";
-  length?: "short" | "medium" | "long";
-}
-
-interface LanguageDetectorOptions {
-  expectedLanguages?: string[];
-  confidenceThreshold?: number;
-  mode?: "fast" | "accurate";
-}
-
-interface SummarizationResult {
-  summary: string;
-  status: "success" | "error";
-  error?: string;
-}
 
 interface AIFactoryCapabilities {
   available: "no" | "readily" | "after-download";
@@ -117,7 +65,6 @@ interface CustomWindow extends Window {
 declare const self: CustomWindow;
 
 interface TranslationContextType {
-  // Translator functions
   translate: (
     text: string,
     sourceLanguage: string,
@@ -127,7 +74,6 @@ interface TranslationContextType {
   preferredTargetLanguage: string;
   setPreferredTargetLanguage: (language: string) => void;
 
-  // Language detector functions
   detectLanguage: (
     text: string,
     expectedLanguages?: string[]
@@ -137,11 +83,9 @@ interface TranslationContextType {
     targetLanguage?: string
   ) => string;
 
-  // Service status
   isTranslationSupported: boolean;
   isDetectionSupported: boolean;
 
-  // New summarization methods
   isSummarizationSupported: boolean;
   summarize: (
     text: string,
@@ -155,29 +99,30 @@ interface TranslationContextType {
   ) => AsyncIterable<string>;
 }
 
-const showErrorToast = (title: string, description: string) => {
-  toast({ title, description, variant: "destructive" });
+const showErrorToast = (title: string, description?: string) => {
+  toast.error(title, {
+    description: description || undefined
+  });
 };
 
-// Create context
+const showSuccessToast = (title: string, description?: string) => {
+  toast.success(title, {
+    description: description || undefined
+  });
+};
+
 const TranslationContext = createContext<TranslationContextType | undefined>(
   undefined
 );
 
-// Storage key for preferred language
 const STORAGE_KEY = "preferred-target-language";
 
-// Provider component
-export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
-  children
-}) => {
-  // State for service availability
+export const TranslationProvider = ({ children }: { children: ReactNode }) => {
   const [isTranslationSupported, setIsTranslationSupported] = useState(false);
   const [isDetectionSupported, setIsDetectionSupported] = useState(false);
   const [isSummarizationSupported, setIsSummarizationSupported] =
     useState(false);
 
-  // State for saved instances
   const [translatorInstances, setTranslatorInstances] = useState<
     Map<string, TranslatorInstance>
   >(new Map());
@@ -186,11 +131,9 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
   const [summarizerInstance, setSummarizerInstance] =
     useState<SummarizerInstance | null>(null);
 
-  // State for user preferences
   const [preferredTargetLanguage, setPreferredLanguageState] =
     useState<string>("en");
 
-  // Check API availability on mount
   useEffect(() => {
     const checkAvailability = () => {
       const translationApiExists = "ai" in self;
@@ -208,13 +151,11 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
 
     checkAvailability();
 
-    // Load preferred language from storage
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY) || "en";
       setPreferredLanguageState(saved);
     }
 
-    // Cleanup on unmount
     return () => {
       translatorInstances.clear();
       setDetectorInstance(null);
@@ -222,7 +163,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, [translatorInstances]);
 
-  // Set preferred language with localStorage persistence
   const setPreferredTargetLanguage = useCallback((language: string) => {
     setPreferredLanguageState(language);
     if (typeof window !== "undefined") {
@@ -244,15 +184,12 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
           return null;
         }
 
-        // Create a unique key for this language pair
         const instanceKey = `${sourceLanguage}-${targetLanguage}`;
 
-        // Return cached instance if it exists
         if (translatorInstances.has(instanceKey)) {
           return translatorInstances.get(instanceKey) || null;
         }
 
-        // Check if the requested language pair is available
         const supportedPairs = [
           "en-ja",
           "ja-en",
@@ -306,7 +243,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
           return null;
         }
 
-        // ✅ Correctly initialize translator
         if (!window.translation) {
           throw new Error("Translation API is not available");
         }
@@ -316,12 +252,18 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
           targetLanguage
         });
 
-        // ✅ Update state correctly using functional update
         setTranslatorInstances((prev) => {
           const newMap = new Map(prev);
           newMap.set(instanceKey, translator);
           return newMap;
         });
+
+        showSuccessToast(
+          "Translator initialized",
+          `Ready to translate from ${languageTagToHumanReadable(
+            sourceLanguage
+          )} to ${languageTagToHumanReadable(targetLanguage)}`
+        );
 
         return translator;
       } catch (error) {
@@ -337,7 +279,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
     [isTranslationSupported, translatorInstances]
   );
 
-  // Translation function
   const translate = useCallback(
     async (
       text: string,
@@ -350,10 +291,20 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
         const translator = await getTranslator(sourceLanguage, targetLanguage);
         if (!translator) return text;
 
-        // Save preference
         setPreferredTargetLanguage(targetLanguage);
 
-        return await translator.translate(text.trim());
+        const translatedText = await translator.translate(text.trim());
+
+        if (translatedText && translatedText !== text) {
+          showSuccessToast(
+            "Translation complete",
+            `Translated from ${languageTagToHumanReadable(
+              sourceLanguage
+            )} to ${languageTagToHumanReadable(targetLanguage)}`
+          );
+        }
+
+        return translatedText;
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error occurred";
@@ -367,7 +318,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
     [getTranslator, setPreferredTargetLanguage]
   );
 
-  // Get or create detector instance
   const getDetector = useCallback(
     async (
       expectedLanguages?: string[]
@@ -381,7 +331,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
           return null;
         }
 
-        // Return existing instance if available
         if (detectorInstance) {
           return detectorInstance;
         }
@@ -390,15 +339,19 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
           throw new Error("Language Detection API is not available");
         }
 
-        // Create options object with expected languages if provided
         const options: LanguageDetectorOptions = {};
         if (expectedLanguages && expectedLanguages.length > 0) {
           options.expectedLanguages = expectedLanguages;
         }
 
-        // Create a new detector instance
         const detector = await self.ai.languageDetector.create(options);
         setDetectorInstance(detector);
+
+        showSuccessToast(
+          "Language detector ready",
+          "Language detection service initialized successfully"
+        );
+
         return detector;
       } catch (error) {
         const errorMessage =
@@ -413,7 +366,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
     [isDetectionSupported, detectorInstance]
   );
 
-  // Language detection function
   const detectLanguage = useCallback(
     async (
       text: string,
@@ -432,11 +384,22 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         const { detectedLanguage, confidence } = results[0];
+        const humanReadableName = languageTagToHumanReadable(
+          detectedLanguage,
+          "en"
+        );
+
+        showSuccessToast(
+          "Language detected",
+          `Detected ${humanReadableName} with ${Math.round(
+            confidence * 100
+          )}% confidence`
+        );
 
         return {
           detectedLanguage,
           confidence,
-          humanReadableName: languageTagToHumanReadable(detectedLanguage, "en")
+          humanReadableName
         };
       } catch (error) {
         const errorMessage =
@@ -452,7 +415,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
     [getDetector]
   );
 
-  // Human readable language name conversion
   const languageTagToHumanReadable = useCallback(
     (languageTag: string, targetLanguage: string = "en"): string => {
       try {
@@ -462,17 +424,16 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
         return displayNames.of(languageTag) ?? languageTag;
       } catch (error: unknown) {
         if (error instanceof Error) {
-          console.log(error.message); // ✅ Safe access
+          console.log(error.message);
         } else {
           console.log("An unknown error occurred.");
         }
-        return languageTag; // Fallback for errors
+        return languageTag;
       }
     },
     []
   );
 
-  // Initialize summarizer
   const initializeSummarizer = useCallback(
     async (options: SummarizationOptions = {}) => {
       try {
@@ -493,8 +454,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
           return null;
         }
 
-        // Ensure self.ai and self.ai.summarizer exist before accessing
-
         const available = (await summarizerFactory.capabilities?.())?.available;
         if (available === "no") {
           showErrorToast(
@@ -514,6 +473,12 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         setSummarizerInstance(summarizer);
+
+        showSuccessToast(
+          "Summarizer ready",
+          "Text summarization service initialized successfully"
+        );
+
         return summarizer;
       } catch (error) {
         const errorMessage =
@@ -529,7 +494,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
     [isSummarizationSupported]
   );
 
-  // Non-streaming summarization
   const summarize = useCallback(
     async (
       text: string,
@@ -552,6 +516,14 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         const summary = await summarizer.summarize(text.trim(), { context });
+
+        if (summary && summary !== text) {
+          showSuccessToast(
+            "Summary created",
+            `Successfully created a ${options.length || "standard"} summary`
+          );
+        }
+
         return { summary, status: "success" };
       } catch (error) {
         const errorMessage =
@@ -571,7 +543,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
     [summarizerInstance, initializeSummarizer]
   );
 
-  // Streaming summarization
   const summarizeStreaming = useCallback(
     async function* (
       text: string,
@@ -592,8 +563,20 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
         if (!summarizer.summarizeStreaming) {
           console.warn("Summarizer does not support streaming.");
           yield await summarizer.summarize(text.trim(), { context });
+
+          showSuccessToast(
+            "Summary created",
+            "Created summary in non-streaming mode"
+          );
+
           return;
         }
+
+        showSuccessToast(
+          "Streaming started",
+          "Generating summary in real-time"
+        );
+
         const stream = await summarizer.summarizeStreaming(text.trim(), {
           context
         });
@@ -607,6 +590,13 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
           result += newContent;
           console.log(result);
         }
+
+        if (result) {
+          showSuccessToast(
+            "Streaming complete",
+            "Finished generating summary stream"
+          );
+        }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error occurred";
@@ -619,7 +609,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
     [summarizerInstance, initializeSummarizer]
   );
 
-  // Context value
   const contextValue: TranslationContextType = {
     translate,
     preferredTargetLanguage,
@@ -641,7 +630,6 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-// Custom hook for using translation context
 export const useTranslation = (): TranslationContextType => {
   const context = useContext(TranslationContext);
   if (context === undefined) {
