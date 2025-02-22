@@ -1,8 +1,6 @@
 "use server";
 
 import nodemailer from "nodemailer";
-import { toast } from "sonner";
-
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -11,8 +9,45 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
+  },
+  pool: true,
+
+  tls: {
+    rejectUnauthorized: false
   }
 });
+
+/**
+ * Sends both welcome email to user and notification to sender
+ * @param {Object} user - User object containing name and email
+ * @returns {Promise<Object>} - Result of the email sending operations
+ */
+export async function sendEmailsWithNotification(user: {
+  name: string;
+  email: string;
+}) {
+  if (!user || !user.email) {
+    throw new Error("User email is required");
+  }
+
+  try {
+    // Send welcome email to user
+    const welcomeResult = await sendWelcomeEmail(user);
+
+    // Send notification to sender
+    const notificationResult = await sendSenderNotification(user);
+
+    console.log(notificationResult);
+    return {
+      success: true,
+      welcomeMessageId: welcomeResult.messageId,
+      notificationMessageId: notificationResult.messageId
+    };
+  } catch (error) {
+    console.error("Failed to send emails:", error);
+    throw error;
+  }
+}
 
 /**
  * Sends a welcome email to a newly registered user
@@ -26,10 +61,8 @@ export async function sendWelcomeEmail(user: { name: string; email: string }) {
 
   const { name, email } = user;
 
-  
   const htmlContent = getWelcomeEmailTemplate(name);
 
-  
   const textContent = `
     Welcome to Stephen AI Text Helper, ${name}!
     
@@ -49,24 +82,151 @@ export async function sendWelcomeEmail(user: { name: string; email: string }) {
   try {
     const result = await transporter.sendMail({
       from: `"Stephen AI Text Helper Team" <${
-        process.env.EMAIL_FROM || "noreply@stephen-ai-text-helper.com"
+        process.env.EMAIL_FROM || "info@stephengift.com"
       }>`,
       to: email,
       subject: "Welcome to Stephen AI Text Helper! 🚀",
       text: textContent,
-      html: htmlContent
+      html: htmlContent,
+      messageId: `<${Date.now()}@stephen-ai-text-helper.com>`,
+      envelope: {
+        from: process.env.EMAIL_USER,
+        to: email
+      },
+      headers: {
+        "X-Sent-By": "Stephen AI Text Helper"
+      }
     });
 
     console.log("Email sent successfully:", result);
-    toast.success("Welcome email sent successfully!");
 
     return { success: true, messageId: result.messageId };
   } catch (error) {
     console.error("Failed to send email:", error);
-    toast.error("Failed to send welcome email. Please try again.");
 
     throw error;
   }
+}
+
+/**
+ * Sends notification email to sender with user details
+ * @param {Object} user - User object containing name and email
+ * @returns {Promise<Object>} - Result of the email sending operation
+ */
+async function sendSenderNotification(user: { name: string; email: string }) {
+  //   const { name, email } = user;
+  const htmlContent = getSenderNotificationTemplate(user);
+  const textContent = getSenderNotificationText(user);
+
+  const result = await transporter.sendMail({
+    from: `"Stephen AI Text Helper System" <${
+      process.env.EMAIL_FROM || "info@stephengift.com"
+    }>`,
+    to: process.env.EMAIL_USER || "info@stephengift.com",
+    subject: "New User Registration Notification",
+    text: textContent,
+    html: htmlContent,
+    messageId: `<${Date.now()}@stephen-ai-text-helper.com>`,
+    envelope: {
+      from: process.env.EMAIL_USER, // use the authenticated user's email
+      to: process.env.EMAIL_USER
+    },
+    headers: {
+      "X-Sent-By": "Stephen AI Text Helper"
+    }
+  });
+
+  console.log("Sender notification sent successfully:", result);
+  return { success: true, messageId: result.messageId };
+}
+
+function getSenderNotificationText(user: { name: string; email: string }) {
+  return `
+    New User Registration Notification
+
+    A new user has registered for Stephen AI Text Helper:
+
+    User Details:
+    - Name: ${user.name}
+    - Email: ${user.email}
+    - Registration Date: ${new Date().toLocaleString()}
+
+    This is an automated notification. Please do not reply to this email.
+  `;
+}
+
+function getSenderNotificationTemplate(user: { name: string; email: string }) {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New User Registration Notification</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .header {
+          background-color: #4338ca;
+          color: white;
+          padding: 20px;
+          border-radius: 8px 8px 0 0;
+          text-align: center;
+        }
+        .content {
+          background-color: #ffffff;
+          padding: 30px;
+          border-radius: 0 0 8px 8px;
+          border: 1px solid #e2e8f0;
+        }
+        .user-details {
+          background-color: #f8fafc;
+          padding: 20px;
+          border-radius: 8px;
+          margin: 20px 0;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 20px;
+          font-size: 12px;
+          color: #718096;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>New User Registration</h1>
+        </div>
+        <div class="content">
+          <p>A new user has registered for Stephen AI Text Helper.</p>
+          
+          <div class="user-details">
+            <h2>User Details</h2>
+            <p><strong>Name:</strong> ${user.name}</p>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Registration Date:</strong> ${new Date().toLocaleString()}</p>
+          </div>
+          
+          <p>This is an automated notification. Please do not reply to this email.</p>
+        </div>
+        <div class="footer">
+          <p>© 2025 Stephen AI Text Helper. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
 }
 
 /**

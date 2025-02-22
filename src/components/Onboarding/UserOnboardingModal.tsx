@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "../../../store";
-import { sendWelcomeEmail } from "@/service/WelcomeEmailService";
+import { sendEmailsWithNotification } from "@/service/WelcomeEmailService";
 import { toast } from "sonner";
 
 const avatarOptions = [
@@ -62,7 +62,7 @@ export function UserOnboardingModal() {
         setUser(formData);
 
         const { name, email } = formData;
-        await sendWelcomeEmail({ name, email });
+        await sendEmailsWithNotification({ name, email });
 
         toast.success("Welcome email sent successfully!");
 
