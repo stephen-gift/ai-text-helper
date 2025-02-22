@@ -192,7 +192,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
         if (!isTranslationSupported) {
           showErrorToast(
             "Translation API not supported",
-            "Your browser doesn't support the Translation API"
+            "Your browser doesn't support the Translation API",
+            {
+              label: "Learn More",
+              onClick: () => router.push("/not-supported")
+            }
           );
           return null;
         }
@@ -284,7 +288,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           error instanceof Error ? error.message : "Unknown error occurred";
         showErrorToast(
           "Translation error",
-          errorMessage || "Failed to initialize translator"
+          errorMessage || "Failed to initialize translator",
+          {
+            label: "Learn More",
+            onClick: () => router.push("/not-supported")
+          }
         );
         return null;
       }
@@ -325,7 +333,7 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           "Translation failed",
           errorMessage || "Failed to translate text",
           {
-            label: "Copy",
+            label: "Learn More",
             onClick: () => router.push("/not-supported")
           }
         );
@@ -343,7 +351,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
         if (!isDetectionSupported) {
           showErrorToast(
             "Language detection not supported",
-            "Your browser doesn't support the Language Detection API"
+            "Your browser doesn't support the Language Detection API",
+            {
+              label: "Learn More",
+              onClick: () => router.push("/not-supported")
+            }
           );
           return null;
         }
@@ -375,7 +387,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           error instanceof Error ? error.message : "Unknown error occurred";
         showErrorToast(
           "Detection error",
-          errorMessage || "Failed to initialize language detector"
+          errorMessage || "Failed to initialize language detector",
+          {
+            label: "Learn More",
+            onClick: () => router.push("/not-supported")
+          }
         );
         return null;
       }
@@ -423,7 +439,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           error instanceof Error ? error.message : "Unknown error occurred";
         showErrorToast(
           "Language detection failed",
-          errorMessage || "Failed to detect language"
+          errorMessage || "Failed to detect language",
+          {
+            label: "Learn More",
+            onClick: () => router.push("/not-supported")
+          }
         );
 
         return null;
@@ -457,7 +477,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
         if (!isSummarizationSupported) {
           showErrorToast(
             "Summarization API not supported",
-            "Your browser doesn't support the Summarization API"
+            "Your browser doesn't support the Summarization API",
+            {
+              label: "Learn More",
+              onClick: () => router.push("/not-supported")
+            }
           );
           return null;
         }
@@ -466,7 +490,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
         if (!summarizerFactory) {
           showErrorToast(
             "Summarization API unavailable",
-            "AI summarizer is not defined."
+            "AI summarizer is not defined.",
+            {
+              label: "Learn More",
+              onClick: () => router.push("/not-supported")
+            }
           );
           return null;
         }
@@ -475,7 +503,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
         if (available === "no") {
           showErrorToast(
             "Summarization API not available",
-            "The Summarization API is not usable on this device."
+            "The Summarization API is not usable on this device.",
+            {
+              label: "Learn More",
+              onClick: () => router.push("/not-supported")
+            }
           );
           return null;
         }
@@ -502,7 +534,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           error instanceof Error ? error.message : "Unknown error occurred";
         showErrorToast(
           "Summarization error",
-          errorMessage || "Failed to initialize summarizer"
+          errorMessage || "Failed to initialize summarizer",
+          {
+            label: "Learn More",
+            onClick: () => router.push("/not-supported")
+          }
         );
 
         return null;
@@ -547,7 +583,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           error instanceof Error ? error.message : "Unknown error occurred";
         showErrorToast(
           "Summarization failed",
-          errorMessage || "Failed to summarize text"
+          errorMessage || "Failed to summarize text",
+          {
+            label: "Learn More",
+            onClick: () => router.push("/not-supported")
+          }
         );
 
         return {
@@ -619,7 +659,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           error instanceof Error ? error.message : "Unknown error occurred";
         showErrorToast(
           "Streaming summarization failed",
-          errorMessage || "Failed to summarize text in real-time"
+          errorMessage || "Failed to summarize text in real-time",
+          {
+            label: "Learn More",
+            onClick: () => router.push("/not-supported")
+          }
         );
       }
     },
