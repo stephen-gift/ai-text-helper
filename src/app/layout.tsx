@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Layout from "@/components/Layout";
-import Head from "next/head";
 import { TranslationProvider } from "@/contexts/TranslationContext";
 import { Toaster } from "sonner";
 
@@ -23,7 +22,8 @@ export const metadata: Metadata = {
   other: {
     "origin-trial": process.env.NEXT_PUBLIC_ORIGIN_TRIAL || "",
     "origin-trial-2": process.env.NEXT_PUBLIC_ORIGIN_TRIAL_2 || "",
-    "origin-trial-3": process.env.NEXT_PUBLIC_ORIGIN_TRIAL_3 || ""
+    "origin-trial-3": process.env.NEXT_PUBLIC_ORIGIN_TRIAL_3 || "",
+    "apple-mobile-web-app-title": "TextHelper"
   }
 };
 
@@ -34,12 +34,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Head>
-        <meta
-          name="origin-trial"
-          content="ApywZEcawPu3bp6OLLTdoGZKtPjN5sKcNOYQ7FrAJbcOp/vfx7SNIZu8Zxj9gqcIPXzkGd5/KiS1HpvUvKee5gwAAABVeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJmZWF0dXJlIjoiQUlTdW1tYXJpemF0aW9uQVBJIiwiZXhwaXJ5IjoxNzUzMTQyNDAwfQ=="
-        />
-      </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
