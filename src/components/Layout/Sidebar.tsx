@@ -19,10 +19,10 @@ import Link from "next/link";
 import Image from "next/image";
 import useChatStore, { Chat, useUserStore } from "../../../store";
 import { usePathname, useRouter } from "next/navigation";
-import { ScrollArea } from "../ui/scroll-area";
 import { SettingsDrawer } from "../General/SettingsDrawer";
 import { Button } from "../ui/button";
 import { MessageSquarePlus } from "lucide-react";
+import { ChatHistory } from "./ChatHistory";
 
 export interface ChatWithTitle extends Chat {
   title: string;
@@ -56,24 +56,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       avatar: user?.avatar || "/images/Avatar5.svg"
     }
   };
-  const { chats } = useChatStore();
-
-  const untitledCount: Record<string, number> = {};
-
-  const chatHistory = chats.map((chat) => {
-    let title = (chat as ChatWithTitle).title || "Untitled Chat";
-
-    if (title === "Untitled Chat") {
-      untitledCount[title] = (untitledCount[title] || 0) + 1;
-      title = `Untitled Chat ${untitledCount[title]}`;
-    }
-    const url = `/chat/${chat.id}`;
-    return {
-      title,
-      url,
-      isActive: pathname === url
-    };
-  });
 
   const handleNewChat = () => {
     const newChatId = createNewChat();
@@ -134,32 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-400 uppercase text-xs tracking-wider">
-            Chat History
-          </SidebarGroupLabel>
-          <SidebarGroupContent className="mt-2 flex-1 ">
-            <ScrollArea className="h-[calc(100vh-500px)]">
-              <SidebarMenu>
-                {chatHistory.map((chat) => (
-                  <SidebarMenuItem key={chat.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={chat.isActive}
-                      className={`w-full px-4 py-2 rounded ${
-                        chat.isActive
-                          ? "bg-gray-800 text-white font-semibold"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <Link href={chat.url}>{chat.title}</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </ScrollArea>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <ChatHistory />
       </SidebarContent>
 
       <SidebarRail />

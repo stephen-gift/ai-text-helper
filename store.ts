@@ -37,6 +37,7 @@ interface MessagePair {
 
 export interface Chat {
   id: string;
+  title: string;
   messagePairs: MessagePair[];
 }
 
@@ -50,6 +51,7 @@ interface SummarizationPreferences {
 interface ChatState {
   chats: Chat[];
   currentChatId: string | null;
+  updateChatTitle: (chatId: string, newTitle: string) => void;
   setCurrentChatId: (chatId: string) => void;
   processingState: {
     isProcessing: boolean;
@@ -134,6 +136,20 @@ const useChatStore = create<ChatState>()(
           }
         });
       },
+
+      updateChatTitle: (chatId: string, newTitle: string) => {
+        set((state) => ({
+          chats: state.chats.map((chat) =>
+            chat.id === chatId
+              ? {
+                  ...chat,
+                  title: newTitle.trim() || `Chat ${state.chats.length}`
+                }
+              : chat
+          )
+        }));
+      },
+
       createNewChat: () => {
         const newChatId = uuidv4();
         set((state) => ({
@@ -208,14 +224,15 @@ const useChatStore = create<ChatState>()(
           const chatIdToUse = state.currentChatId;
           if (!chatIdToUse) {
             const newChatId = uuidv4();
+            const newChat: Chat = {
+              id: newChatId,
+              title: `Chat ${state.chats.length + 1}`,
+              messagePairs: [{ userMessage, response: responseMessage }]
+            };
+
             return {
               ...state,
-              chats: [
-                {
-                  id: newChatId,
-                  messagePairs: [{ userMessage, response: responseMessage }]
-                }
-              ],
+              chats: [newChat, ...state.chats],
               currentChatId: newChatId
             };
           }
@@ -225,15 +242,15 @@ const useChatStore = create<ChatState>()(
           );
 
           if (!chatExists) {
+            const newChat: Chat = {
+              id: chatIdToUse,
+              title: `Chat ${state.chats.length + 1}`,
+              messagePairs: [{ userMessage, response: responseMessage }]
+            };
+
             return {
               ...state,
-              chats: [
-                ...state.chats,
-                {
-                  id: chatIdToUse,
-                  messagePairs: [{ userMessage, response: responseMessage }]
-                }
-              ]
+              chats: [...state.chats, newChat]
             };
           }
 
