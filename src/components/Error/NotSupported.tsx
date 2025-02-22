@@ -1,12 +1,13 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger
 } from "@/components/ui/accordion";
+import Link from "next/link";
 
 type StepType = {
   title: string;
@@ -22,6 +23,13 @@ type ErrorType = "translation" | "detection" | "summarization";
 
 interface TroubleshootingStepsProps {
   type: ErrorType;
+}
+
+interface NotSupportedComponentProps {
+  isTranslationSupported?: boolean;
+  isDetectionSupported?: boolean;
+  isSummarizationSupported?: boolean;
+  forceShowAll?: boolean; // New prop
 }
 
 const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
@@ -187,19 +195,20 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
 };
 
 const NotSupportedComponent = ({
-  isTranslationSupported,
-  isDetectionSupported,
-  isSummarizationSupported
-}: {
-  isTranslationSupported: boolean;
-  isDetectionSupported: boolean;
-  isSummarizationSupported: boolean;
-}) => {
+  isTranslationSupported = true,
+  isDetectionSupported = true,
+  isSummarizationSupported = true,
+  forceShowAll = false
+}: NotSupportedComponentProps) => {
+  // If forceShowAll is true, override all support flags to false
+  const showTranslation = forceShowAll ? false : isTranslationSupported;
+  const showDetection = forceShowAll ? false : isDetectionSupported;
+  const showSummarization = forceShowAll ? false : isSummarizationSupported;
   return (
-    <Card className="w-full max-w-2xl mx-auto overflow-y-scroll">
-      <CardContent className="pt-6 space-y-4">
-        <Accordion type="single" collapsible className="space-y-4 w-full">
-          {!isTranslationSupported && (
+    <Card className="w-full max-w-2xl mx-auto ">
+      <CardContent className="pt-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <Accordion type="single" collapsible className="space-y-4 w-full ">
+          {!showTranslation && (
             <AccordionItem
               value="translation"
               className="border rounded-lg overflow-hidden"
@@ -230,7 +239,7 @@ const NotSupportedComponent = ({
             </AccordionItem>
           )}
 
-          {!isDetectionSupported && (
+          {!showDetection && (
             <AccordionItem
               value="detection"
               className="border rounded-lg overflow-hidden"
@@ -262,7 +271,7 @@ const NotSupportedComponent = ({
             </AccordionItem>
           )}
 
-          {!isSummarizationSupported && (
+          {!showSummarization && (
             <AccordionItem
               value="summarization"
               className="border rounded-lg overflow-hidden"
@@ -294,23 +303,42 @@ const NotSupportedComponent = ({
             </AccordionItem>
           )}
 
-          {isTranslationSupported &&
-            isDetectionSupported &&
-            isSummarizationSupported && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-md flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div className="space-y-1">
-                  <h3 className="font-medium text-green-800">
-                    All Features Available
-                  </h3>
-                  <p className="text-green-700 text-sm">
-                    Your browser supports all required features. You&apos;re
-                    good to go!
-                  </p>
-                </div>
+          {showTranslation && showDetection && showSummarization && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-md flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="space-y-1">
+                <h3 className="font-medium text-green-800">
+                  All Features Available
+                </h3>
+                <p className="text-green-700 text-sm">
+                  Your browser supports all required features. You&apos;re good
+                  to go!
+                </p>
               </div>
-            )}
+            </div>
+          )}
         </Accordion>
+
+        {/* Add navigation between pages */}
+        <div className="pt-4 flex justify-end space-x-4 text-sm">
+          {forceShowAll ? (
+            <Link
+              href="/not-supported"
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 group relative"
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span className="">Check My Browser Support</span>
+            </Link>
+          ) : (
+            <Link
+              href="/not-supported/preview"
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 group relative"
+            >
+              <span className="">View All Error States</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

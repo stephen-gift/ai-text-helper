@@ -18,6 +18,7 @@ import React, {
   ReactNode
 } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface TranslationAPI {
   createTranslator: (options: {
@@ -99,15 +100,25 @@ interface TranslationContextType {
   ) => AsyncIterable<string>;
 }
 
-const showErrorToast = (title: string, description?: string) => {
+const showErrorToast = (
+  title: string,
+  description?: string,
+  action?: { label: string; onClick: () => void }
+) => {
   toast.error(title, {
-    description: description || undefined
+    description: description || undefined,
+    action
   });
 };
 
-const showSuccessToast = (title: string, description?: string) => {
+const showSuccessToast = (
+  title: string,
+  description?: string,
+  action?: { label: string; onClick: () => void }
+) => {
   toast.success(title, {
-    description: description || undefined
+    description: description || undefined,
+    action
   });
 };
 
@@ -122,6 +133,8 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
   const [isDetectionSupported, setIsDetectionSupported] = useState(false);
   const [isSummarizationSupported, setIsSummarizationSupported] =
     useState(false);
+
+  const router = useRouter();
 
   const [translatorInstances, setTranslatorInstances] = useState<
     Map<string, TranslatorInstance>
@@ -310,7 +323,11 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           error instanceof Error ? error.message : "Unknown error occurred";
         showErrorToast(
           "Translation failed",
-          errorMessage || "Failed to translate text"
+          errorMessage || "Failed to translate text",
+          {
+            label: "Copy",
+            onClick: () => router.push("/not-supported")
+          }
         );
         return text;
       }
