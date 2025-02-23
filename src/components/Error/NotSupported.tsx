@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, ArrowLeft, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Video } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -197,6 +197,32 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
   );
 };
 
+const VideoDemo = () => {
+  // Convert Google Drive sharing URL to embed URL
+  const getEmbedUrl = () => {
+    return `https://drive.google.com/file/d/${process.env.NEXT_PUBLIC_GOOGLE_DRIVE_VIDEO_ID}/preview`;
+  };
+
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex items-center gap-2 text-base font-medium">
+        <Video className="h-5 w-5" />
+        <h2>How to Use This Application</h2>
+      </div>
+      <div className="relative w-full pt-[56.25%]">
+        {" "}
+        {/* 16:9 aspect ratio */}
+        <iframe
+          src={getEmbedUrl()}
+          className="absolute top-0 left-0 w-full h-full rounded-lg"
+          allow="autoplay"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+};
+
 const NotSupportedComponent = ({
   isTranslationSupported = true,
   isDetectionSupported = true,
@@ -209,6 +235,7 @@ const NotSupportedComponent = ({
   return (
     <Card className="w-full max-w-2xl mx-auto dark:bg-gray-900 dark:border-gray-800">
       <CardContent className="pt-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <VideoDemo />
         <Accordion type="single" collapsible className="space-y-4 w-full">
           {!showTranslation && (
             <AccordionItem
