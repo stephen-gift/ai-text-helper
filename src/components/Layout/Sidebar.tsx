@@ -78,11 +78,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {...props}
       className="bg-[url('/images/sidebar-texture-light.jpg')] dark:bg-[url('/images/sidebar-texture-dark.jpg')] bg-cover bg-no-repeat"
     >
-      <SidebarHeader className="flex flex-row items-center gap-3 p-4 border-b border-gray-200 dark:border-gray-700">
-        <Image src="/images/Logo.svg" alt="Logo" width={30} height={30} />
-        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-          Text Helper
-        </span>
+      <SidebarHeader className="border-b border-gray-200 dark:border-gray-700">
+        <Link href={"/"} className="flex flex-row items-center gap-3 p-2">
+          <Image src="/images/Logo.svg" alt="Logo" width={30} height={30} />
+          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            Text Helper
+          </span>
+        </Link>
       </SidebarHeader>
 
       <SidebarContent className="flex flex-col h-full gap-3 mt-2">

@@ -26,7 +26,7 @@ export const ChatHistory = () => {
       <SidebarGroupLabel>Chat History</SidebarGroupLabel>
       <SidebarGroupContent>
         <ChatSearch />
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <ScrollArea className="">
           <SidebarMenu>
             {chatHistory.map((chat) => (
               <ChatHistoryItem key={chat.id} {...chat} />
