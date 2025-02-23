@@ -29,7 +29,7 @@ interface NotSupportedComponentProps {
   isTranslationSupported?: boolean;
   isDetectionSupported?: boolean;
   isSummarizationSupported?: boolean;
-  forceShowAll?: boolean; // New prop
+  forceShowAll?: boolean;
 }
 
 const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
@@ -147,17 +147,17 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
       {steps[type].map((step, index) => (
         <div
           key={index}
-          className="bg-white/40 rounded-lg p-3 border border-current border-opacity-20"
+          className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 border border-current border-opacity-20 dark:border-opacity-40"
         >
           <div className="flex items-start gap-2">
-            <span className="flex-shrink-0 h-6 w-6 rounded-full bg-white border flex items-center justify-center text-sm font-medium">
+            <span className="flex-shrink-0 h-6 w-6 rounded-full bg-white dark:bg-gray-700 border flex items-center justify-center text-sm font-medium">
               {index + 1}
             </span>
             <div className="space-y-1 overflow-hidden">
-              <h5 className="font-medium text-sm sm:text-base break-words">
+              <h5 className="font-medium text-sm sm:text-base break-words dark:text-gray-100">
                 {step.title}
               </h5>
-              <p className="text-xs sm:text-sm opacity-90 break-words">
+              <p className="text-xs sm:text-sm opacity-90 break-words dark:text-gray-300">
                 {step.details}
               </p>
             </div>
@@ -167,21 +167,24 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
 
       {type === "summarization" && (
         <div className="mt-6 space-y-4">
-          <h6 className="font-medium text-base sm:text-lg">
+          <h6 className="font-medium text-base sm:text-lg dark:text-gray-100">
             Test Codes for Console
           </h6>
           {codeExamples[type].map((example, index) => (
-            <div key={index} className="bg-slate-800 rounded-lg p-4">
-              <p className="text-white text-xs sm:text-sm mb-2">
+            <div
+              key={index}
+              className="bg-slate-800 dark:bg-gray-900 rounded-lg p-4"
+            >
+              <p className="text-white dark:text-gray-200 text-xs sm:text-sm mb-2">
                 {example.title}
               </p>
-              <pre className="bg-slate-900 p-3 rounded text-xs sm:text-sm text-white overflow-x-auto whitespace-pre-wrap break-all">
+              <pre className="bg-slate-900 dark:bg-gray-800 p-3 rounded text-xs sm:text-sm text-white dark:text-gray-200 overflow-x-auto whitespace-pre-wrap break-all">
                 <code>{example.code}</code>
               </pre>
             </div>
           ))}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-xs sm:text-sm text-blue-800">
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+            <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
               <strong>Note:</strong> You can download both the Optimization
               Guide (3GB) and Summarizer API model (2.35GB) at the same time to
               save time. Total download time will be approximately 40 minutes
@@ -200,36 +203,35 @@ const NotSupportedComponent = ({
   isSummarizationSupported = true,
   forceShowAll = false
 }: NotSupportedComponentProps) => {
-  // If forceShowAll is true, override all support flags to false
   const showTranslation = forceShowAll ? false : isTranslationSupported;
   const showDetection = forceShowAll ? false : isDetectionSupported;
   const showSummarization = forceShowAll ? false : isSummarizationSupported;
   return (
-    <Card className="w-full max-w-2xl mx-auto ">
+    <Card className="w-full max-w-2xl mx-auto dark:bg-gray-900 dark:border-gray-800">
       <CardContent className="pt-6 space-y-4 max-h-[80vh] overflow-y-auto">
-        <Accordion type="single" collapsible className="space-y-4 w-full ">
+        <Accordion type="single" collapsible className="space-y-4 w-full">
           {!showTranslation && (
             <AccordionItem
               value="translation"
-              className="border rounded-lg overflow-hidden"
+              className="border rounded-lg overflow-hidden dark:border-gray-700"
             >
-              <div className="bg-amber-50 border-amber-200">
+              <div className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
                 <AccordionTrigger className="px-2 sm:px-4 py-3 hover:no-underline w-full">
                   <div className="flex items-start gap-2 sm:gap-3 text-left w-full">
-                    <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                     <div className="space-y-1 overflow-hidden">
-                      <h3 className="font-medium text-amber-800 text-sm sm:text-base break-words">
+                      <h3 className="font-medium text-amber-800 dark:text-amber-200 text-sm sm:text-base break-words">
                         Translation Not Available
                       </h3>
-                      <p className="text-amber-700 text-xs sm:text-sm break-words">
+                      <p className="text-amber-700 dark:text-amber-300 text-xs sm:text-sm break-words">
                         Your browser doesn&apos;t support the Translation API.
                       </p>
                     </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="bg-amber-50/50 border-t border-amber-200 max-w-full">
+                <AccordionContent className="bg-amber-50/50 dark:bg-amber-900/10 border-t border-amber-200 dark:border-amber-800 max-w-full">
                   <div className="px-2 sm:px-4 py-3 overflow-x-auto">
-                    <h4 className="font-medium text-amber-800 mb-3 text-sm sm:text-base">
+                    <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-3 text-sm sm:text-base">
                       How to resolve this issue:
                     </h4>
                     <TroubleshootingSteps type="translation" />
@@ -242,26 +244,26 @@ const NotSupportedComponent = ({
           {!showDetection && (
             <AccordionItem
               value="detection"
-              className="border rounded-lg overflow-hidden"
+              className="border rounded-lg overflow-hidden dark:border-gray-700"
             >
-              <div className="bg-blue-50 border-blue-200">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                 <AccordionTrigger className="px-2 sm:px-4 py-3 hover:no-underline w-full">
                   <div className="flex items-start gap-2 sm:gap-3 text-left w-full">
-                    <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div className="space-y-1 overflow-hidden">
-                      <h3 className="font-medium text-blue-800 text-sm sm:text-base break-words">
+                      <h3 className="font-medium text-blue-800 dark:text-blue-200 text-sm sm:text-base break-words">
                         Language Detection Not Available
                       </h3>
-                      <p className="text-blue-700 text-xs sm:text-sm break-words">
+                      <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm break-words">
                         Language detection features are not supported in your
                         current browser.
                       </p>
                     </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="bg-blue-50/50 border-t border-blue-200 max-w-full">
+                <AccordionContent className="bg-blue-50/50 dark:bg-blue-900/10 border-t border-blue-200 dark:border-blue-800 max-w-full">
                   <div className="px-2 sm:px-4 py-3 overflow-x-auto">
-                    <h4 className="font-medium text-blue-800 mb-3 text-sm sm:text-base">
+                    <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-3 text-sm sm:text-base">
                       How to resolve this issue:
                     </h4>
                     <TroubleshootingSteps type="detection" />
@@ -274,26 +276,26 @@ const NotSupportedComponent = ({
           {!showSummarization && (
             <AccordionItem
               value="summarization"
-              className="border rounded-lg overflow-hidden"
+              className="border rounded-lg overflow-hidden dark:border-gray-700"
             >
-              <div className="bg-purple-50 border-purple-200">
+              <div className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800">
                 <AccordionTrigger className="px-2 sm:px-4 py-3 hover:no-underline w-full">
                   <div className="flex items-start gap-2 sm:gap-3 text-left w-full">
-                    <AlertCircle className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
                     <div className="space-y-1 overflow-hidden">
-                      <h3 className="font-medium text-purple-800 text-sm sm:text-base break-words">
+                      <h3 className="font-medium text-purple-800 dark:text-purple-200 text-sm sm:text-base break-words">
                         Summarization Not Available
                       </h3>
-                      <p className="text-purple-700 text-xs sm:text-sm break-words">
+                      <p className="text-purple-700 dark:text-purple-300 text-xs sm:text-sm break-words">
                         Text summarization features are not supported in your
                         current browser.
                       </p>
                     </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="bg-purple-50/50 border-t border-purple-200 max-w-full">
+                <AccordionContent className="bg-purple-50/50 dark:bg-purple-900/10 border-t border-purple-200 dark:border-purple-800 max-w-full">
                   <div className="px-2 sm:px-4 py-3 overflow-x-auto">
-                    <h4 className="font-medium text-purple-800 mb-3 text-sm sm:text-base">
+                    <h4 className="font-medium text-purple-800 dark:text-purple-200 mb-3 text-sm sm:text-base">
                       How to resolve this issue:
                     </h4>
                     <TroubleshootingSteps type="summarization" />
@@ -304,13 +306,13 @@ const NotSupportedComponent = ({
           )}
 
           {showTranslation && showDetection && showSummarization && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-md flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <h3 className="font-medium text-green-800">
+                <h3 className="font-medium text-green-800 dark:text-green-200">
                   All Features Available
                 </h3>
-                <p className="text-green-700 text-sm">
+                <p className="text-green-700 dark:text-green-300 text-sm">
                   Your browser supports all required features. You&apos;re good
                   to go!
                 </p>
@@ -324,7 +326,7 @@ const NotSupportedComponent = ({
           {forceShowAll ? (
             <Link
               href="/not-supported"
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 group relative"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-2 group relative"
             >
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               <span className="">Check My Browser Support</span>
@@ -332,7 +334,7 @@ const NotSupportedComponent = ({
           ) : (
             <Link
               href="/not-supported/preview"
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 group relative"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-2 group relative"
             >
               <span className="">View All Error States</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

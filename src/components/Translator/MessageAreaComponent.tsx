@@ -11,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { useUserStore } from "../../../store";
+import useChatStore, { useUserStore } from "../../../store";
 import { toast } from "sonner";
 import { SettingsDrawer } from "../General/SettingsDrawer";
+import { useParams } from "next/navigation";
 
 interface MessageAreaProps {
   messagePairs: Array<{
@@ -69,6 +70,9 @@ export function MessageArea({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useUserStore();
+  const { currentChatId } = useChatStore();
+  const params = useParams();
+  const chatId = params?.chatId as string;
 
   const handleLanguageSelect = (messageId: string, language: string) => {
     setSelectedLanguages((prev) => ({
@@ -84,6 +88,32 @@ export function MessageArea({
       duration: 2000
     });
   };
+
+  const validateChatId = () => {
+    if (currentChatId !== chatId) {
+      toast.error("Action Not Allowed", {
+        description:
+          "Translation/Summarization is not allowed for previous chats. Please create a new chat.",
+        duration: 3000
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const handleTranslate = async (
+    responseId: string,
+    targetLanguage: string
+  ) => {
+    if (!validateChatId()) return;
+    await onTranslate(responseId, targetLanguage);
+  };
+
+  const handleSummarize = async (responseId: string) => {
+    if (!validateChatId()) return;
+    await onSummarize(responseId);
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messagePairs]);
@@ -93,7 +123,7 @@ export function MessageArea({
   };
 
   return (
-    <div className="flex flex-col space-y-4 p-4 overflow-y-auto">
+    <div className="flex flex-col space-y-4 p-4 overflow-y-auto bg-white dark:bg-gray-900">
       {messagePairs.map(({ userMessage, response }) => (
         <div key={`message-pair-${userMessage.id}`} className="space-y-4">
           {/* User Message */}
@@ -106,14 +136,14 @@ export function MessageArea({
             className="flex justify-end"
           >
             <motion.div
-              className="flex items-end justify-end "
+              className="flex items-end justify-end"
               initial={{ x: 20 }}
               animate={{ x: 0 }}
             >
-              <div className="chat-bubble h-full w-[70%] px-4 py-2 rounded-2xl rounded-br-none shadow-sm bg-blue-500/80 text-white self-start backdrop-blur-sm ">
-                <p className="break-words ">{userMessage.text}</p>
+              <div className="chat-bubble h-full w-[70%] px-4 py-2 rounded-2xl rounded-br-none shadow-sm bg-blue-500/80 dark:bg-blue-600/80 text-white self-start backdrop-blur-sm">
+                <p className="break-words">{userMessage.text}</p>
                 {userMessage.detectedLanguage && (
-                  <p className="text-sm text-gray-200 mt-1">
+                  <p className="text-sm text-gray-200 dark:text-gray-300 mt-1">
                     Detected: {userMessage.detectedLanguage.name} (
                     {(userMessage.detectedLanguage.confidence * 100).toFixed(1)}
                     %)
@@ -153,18 +183,18 @@ export function MessageArea({
                 />
               </div>
               <div className="flex flex-col justify-start items-start w-[70%]">
-                <div className="chat-bubble px-4 py-2 rounded-2xl rounded-tl-none shadow-sm bg-gray-100/80 text-gray-800 backdrop-blur-sm">
+                <div className="chat-bubble px-4 py-2 rounded-2xl rounded-tl-none shadow-sm bg-gray-100/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-100 backdrop-blur-sm">
                   <p className="break-words">{response.text}</p>
                   {response.detectedLanguage && (
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       Detected: {response.detectedLanguage.name} (
                       {(response.detectedLanguage.confidence * 100).toFixed(1)}
                       %)
                     </p>
                   )}
                   {response.translation && (
-                    <div className="mt-3 p-2 bg-green-50 rounded-lg border border-green-200 relative group">
-                      <div className="text-xs text-green-700 mb-1 flex justify-between items-center">
+                    <div className="mt-3 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 relative group">
+                      <div className="text-xs text-green-700 dark:text-green-300 mb-1 flex justify-between items-center">
                         <span>Translation:</span>
                         <button
                           onClick={() =>
@@ -173,25 +203,31 @@ export function MessageArea({
                               "Translation"
                             )
                           }
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-green-100 rounded"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-green-100 dark:hover:bg-green-800/50 rounded"
                         >
-                          <Copy size={14} className="text-green-700" />
+                          <Copy
+                            size={14}
+                            className="text-green-700 dark:text-green-300"
+                          />
                         </button>
                       </div>
                       <p>{response.translation}</p>
                     </div>
                   )}
                   {response.summary && (
-                    <div className="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-200 relative group">
-                      <div className="text-xs text-blue-700 mb-1 flex justify-between items-center">
+                    <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 relative group">
+                      <div className="text-xs text-blue-700 dark:text-blue-300 mb-1 flex justify-between items-center">
                         <span>Summary:</span>
                         <button
                           onClick={() =>
                             copyToClipboard(response.summary!, "Summary")
                           }
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-blue-100 rounded"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-blue-100 dark:hover:bg-blue-800/50 rounded"
                         >
-                          <Copy size={14} className="text-blue-700" />
+                          <Copy
+                            size={14}
+                            className="text-blue-700 dark:text-blue-300"
+                          />
                         </button>
                       </div>
                       <p>{response.summary}</p>
@@ -208,17 +244,21 @@ export function MessageArea({
                         handleLanguageSelect(response.id, lang)
                       }
                     >
-                      <SelectTrigger className="">
+                      <SelectTrigger className="bg-white dark:bg-gray-800">
                         <SelectValue placeholder="Select Language" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white dark:bg-gray-800">
                         {supportedLanguages
                           .filter(
                             (lang) =>
                               lang.code !== response.detectedLanguage?.code
                           )
                           .map((lang) => (
-                            <SelectItem key={lang.code} value={lang.code}>
+                            <SelectItem
+                              key={lang.code}
+                              value={lang.code}
+                              className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
                               {lang.name}
                             </SelectItem>
                           ))}
@@ -226,9 +266,12 @@ export function MessageArea({
                     </Select>
 
                     <Button
-                      className="w-full"
+                      className="w-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                       onClick={() =>
-                        onTranslate(response.id, selectedLanguages[response.id])
+                        handleTranslate(
+                          response.id,
+                          selectedLanguages[response.id]
+                        )
                       }
                       disabled={
                         !selectedLanguages[response.id] ||
@@ -253,12 +296,12 @@ export function MessageArea({
                       <div className="flex items-center gap-2">
                         <Button
                           variant="secondary"
-                          onClick={() => onSummarize(response.id)}
+                          onClick={() => handleSummarize(response.id)}
                           disabled={
                             processingState.isSummarizing &&
                             processingState.currentProcessingId === response.id
                           }
-                          className="flex-1"
+                          className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
                         >
                           {processingState.isSummarizing &&
                           processingState.currentProcessingId ===

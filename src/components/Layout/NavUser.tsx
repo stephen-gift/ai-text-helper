@@ -68,11 +68,11 @@ export function NavUser({ user: initialUser }: NavUserProps) {
           <SidebarMenuButton
             size="lg"
             onClick={() => setOpen(true)}
-            className="w-full px-4 py-2 rounded  "
+            className="w-full px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarImage src={displayUser.avatar} alt={displayUser.name} />
-              <AvatarFallback className="rounded-lg">
+              <AvatarFallback className="rounded-lg bg-gray-700 dark:bg-gray-600">
                 {displayUser.name
                   .split(" ")
                   .map((n) => n[0])
@@ -80,21 +80,25 @@ export function NavUser({ user: initialUser }: NavUserProps) {
               </AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{displayUser.name}</span>
-              <span className="truncate text-xs text-gray-400">
+              <span className="truncate font-semibold dark:text-gray-100">
+                {displayUser.name}
+              </span>
+              <span className="truncate text-xs text-gray-400 dark:text-gray-500">
                 {displayUser.email}
               </span>
             </div>
-            <ChevronsUpDown className="ml-auto size-4 text-gray-400" />
+            <ChevronsUpDown className="ml-auto size-4 text-gray-400 dark:text-gray-500" />
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="">
+        <DialogContent className="bg-white dark:bg-gray-900">
           <DialogHeader>
-            <DialogTitle>Profile Settings</DialogTitle>
-            <DialogDescription className="text-gray-500">
+            <DialogTitle className="text-gray-900 dark:text-gray-100">
+              Profile Settings
+            </DialogTitle>
+            <DialogDescription className="text-gray-500 dark:text-gray-400">
               Update your profile information and avatar.
             </DialogDescription>
             <DialogClose className="absolute right-4 top-4"></DialogClose>
@@ -103,11 +107,13 @@ export function NavUser({ user: initialUser }: NavUserProps) {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium ">Profile Picture</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Profile Picture
+                </label>
                 <div className="flex items-center justify-center">
                   <Avatar className="h-24 w-24 rounded-lg">
                     <AvatarImage src={formData.avatar} alt={formData.name} />
-                    <AvatarFallback className="rounded-lg text-xl ">
+                    <AvatarFallback className="rounded-lg text-xl bg-gray-700 dark:bg-gray-600">
                       {formData.name
                         .split(" ")
                         .map((n) => n[0])
@@ -118,10 +124,10 @@ export function NavUser({ user: initialUser }: NavUserProps) {
 
                 {/* Avatar Selection Grid */}
                 <div className="">
-                  <label className="text-sm font-medium  block mb-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
                     Choose Avatar
                   </label>
-                  <div className="grid  justify-between items-center grid-flow-col auto-col-max gap-2 p-2 rounded-lg">
+                  <div className="grid justify-between items-center grid-flow-col auto-col-max gap-2 p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
                     {avatarOptions.map((avatarSrc, index) => (
                       <button
                         key={index}
@@ -132,9 +138,9 @@ export function NavUser({ user: initialUser }: NavUserProps) {
                             avatar: avatarSrc
                           }))
                         }
-                        className={`relative rounded-lg overflow-hidden hover:ring-2 hover:ring-slate-900 transition-all ${
+                        className={`relative rounded-lg overflow-hidden hover:ring-2 hover:ring-slate-900 dark:hover:ring-slate-100 transition-all ${
                           formData.avatar === avatarSrc
-                            ? "ring-2 ring-slate-900"
+                            ? "ring-2 ring-slate-900 dark:ring-slate-100"
                             : ""
                         }`}
                       >
@@ -143,8 +149,8 @@ export function NavUser({ user: initialUser }: NavUserProps) {
                             src={avatarSrc}
                             alt={`Avatar option ${index + 1}`}
                           />
-                          <AvatarFallback className="bg-gray-700">
-                            <Camera className="h-4 w-4" />
+                          <AvatarFallback className="bg-gray-700 dark:bg-gray-600">
+                            <Camera className="h-4 w-4 text-gray-300 dark:text-gray-400" />
                           </AvatarFallback>
                         </Avatar>
                       </button>
@@ -155,7 +161,10 @@ export function NavUser({ user: initialUser }: NavUserProps) {
 
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="space-y-1 w-full">
-                  <Label htmlFor="name" className="text-sm font-medium ">
+                  <Label
+                    htmlFor="name"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
                     Name
                   </Label>
                   <Input
@@ -164,12 +173,15 @@ export function NavUser({ user: initialUser }: NavUserProps) {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    className=" border-gray-700 "
+                    className="border-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                   />
                 </div>
 
                 <div className="space-y-1 w-full">
-                  <Label htmlFor="email" className="text-sm font-medium ">
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
                     Email
                   </Label>
                   <Input
@@ -182,7 +194,7 @@ export function NavUser({ user: initialUser }: NavUserProps) {
                         email: e.target.value
                       }))
                     }
-                    className=" border-gray-700 "
+                    className="border-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                   />
                 </div>
               </div>
@@ -191,7 +203,7 @@ export function NavUser({ user: initialUser }: NavUserProps) {
             <div className="flex flex-col gap-2">
               <Button
                 type="submit"
-                className="w-full  hover:bg-gray-700 text-white"
+                className="w-full bg-gray-900 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 text-white"
               >
                 <Save className="mr-2 size-4" />
                 Save Changes

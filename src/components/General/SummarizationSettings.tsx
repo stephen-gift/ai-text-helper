@@ -19,7 +19,10 @@ const SummarizationSettings = () => {
       <div className="grid grid-cols-2 gap-4">
         {/* Type and Length in one row */}
         <div className="space-y-1">
-          <Label htmlFor="summary-type" className="text-sm">
+          <Label
+            htmlFor="summary-type"
+            className="text-sm text-gray-700 dark:text-gray-300"
+          >
             Summary Type
           </Label>
           <Select
@@ -34,20 +37,46 @@ const SummarizationSettings = () => {
               })
             }
           >
-            <SelectTrigger id="summary-type" className="w-full">
+            <SelectTrigger
+              id="summary-type"
+              className="w-full bg-white dark:bg-gray-800"
+            >
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="key-points">Key Points</SelectItem>
-              <SelectItem value="tl;dr">TL;DR</SelectItem>
-              <SelectItem value="teaser">Teaser</SelectItem>
-              <SelectItem value="headline">Headline</SelectItem>
+            <SelectContent className="bg-white dark:bg-gray-800">
+              <SelectItem
+                value="key-points"
+                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Key Points
+              </SelectItem>
+              <SelectItem
+                value="tl;dr"
+                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                TL;DR
+              </SelectItem>
+              <SelectItem
+                value="teaser"
+                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Teaser
+              </SelectItem>
+              <SelectItem
+                value="headline"
+                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Headline
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="summary-length" className="text-sm">
+          <Label
+            htmlFor="summary-length"
+            className="text-sm text-gray-700 dark:text-gray-300"
+          >
             Length
           </Label>
           <Select
@@ -58,13 +87,31 @@ const SummarizationSettings = () => {
               })
             }
           >
-            <SelectTrigger id="summary-length" className="w-full">
+            <SelectTrigger
+              id="summary-length"
+              className="w-full bg-white dark:bg-gray-800"
+            >
               <SelectValue placeholder="Select length" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="short">Short</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="long">Long</SelectItem>
+            <SelectContent className="bg-white dark:bg-gray-800">
+              <SelectItem
+                value="short"
+                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Short
+              </SelectItem>
+              <SelectItem
+                value="medium"
+                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Medium
+              </SelectItem>
+              <SelectItem
+                value="long"
+                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Long
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -72,7 +119,10 @@ const SummarizationSettings = () => {
 
       {/* Format and Custom Instructions */}
       <div className="space-y-1">
-        <Label htmlFor="summary-format" className="text-sm">
+        <Label
+          htmlFor="summary-format"
+          className="text-sm text-gray-700 dark:text-gray-300"
+        >
           Format
         </Label>
         <Select
@@ -83,12 +133,25 @@ const SummarizationSettings = () => {
             })
           }
         >
-          <SelectTrigger id="summary-format" className="w-full">
+          <SelectTrigger
+            id="summary-format"
+            className="w-full bg-white dark:bg-gray-800"
+          >
             <SelectValue placeholder="Select format" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="markdown">Markdown</SelectItem>
-            <SelectItem value="plain-text">Plain Text</SelectItem>
+          <SelectContent className="bg-white dark:bg-gray-800">
+            <SelectItem
+              value="markdown"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Markdown
+            </SelectItem>
+            <SelectItem
+              value="plain-text"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Plain Text
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -105,6 +168,7 @@ const SummarizationSettings = () => {
               customPrompt: undefined
             })
           }
+          className="dark:bg-gray-800 dark:hover:bg-gray-700"
         >
           Reset
         </Button>

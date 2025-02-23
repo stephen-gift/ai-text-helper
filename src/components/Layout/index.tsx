@@ -53,16 +53,20 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
+
   return (
     <>
       <SidebarProvider>
         <AppSidebar />
 
-        <SidebarInset className="flex flex-col">
-          <header className="flex h-16 shrink-0 justify-between items-center gap-2 border-b px-4">
-            <div className="flex h-16 shrink-0 items-center gap-2 ">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
+        <SidebarInset className="flex flex-col bg-white dark:bg-gray-950">
+          <header className="flex h-16 shrink-0 justify-between items-center gap-2 border-b border-gray-200 dark:border-gray-800 px-4">
+            <div className="flex h-16 shrink-0 items-center gap-2">
+              <SidebarTrigger className="-ml-1 text-gray-900 dark:text-gray-100" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 h-4 bg-gray-200 dark:bg-gray-700"
+              />
               <Image
                 src="/images/Logo.svg"
                 alt="Logo"
@@ -70,18 +74,21 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 height={32}
                 priority
               />
-              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 h-4 bg-gray-200 dark:bg-gray-700"
+              />
               <Breadcrumbs />
             </div>
             <Button
               variant={"outline"}
-              className="rounded-full w-10 h-10"
+              className="rounded-full w-10 h-10 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => router.push("/not-supported")}
             >
-              <HelpCircle />
+              <HelpCircle className="text-gray-900 dark:text-gray-100" />
             </Button>
           </header>
-          <div className="flex flex-1 max-h-[calc(100svh-70px)]  flex-col overflow-hidden p-4 ">
+          <div className="flex flex-1 max-h-[calc(100svh-70px)] flex-col overflow-hidden p-4">
             {isAnyApiUnsupported ? (
               <NotSupportedComponent
                 isTranslationSupported={isTranslationSupported}

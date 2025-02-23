@@ -9,18 +9,22 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator
 } from "../ui/breadcrumb";
+import useChatStore from "../../../store";
 
 const Breadcrumbs = () => {
   const pathname = usePathname();
   const router = useRouter();
   const pathnames = pathname.split("/").filter((x) => x);
+  const { chats } = useChatStore();
 
   const getBreadcrumbLabel = (segment: string, index: number) => {
     if (segment === "chat") {
       return "Chat";
     }
     if (pathnames[0] === "chat" && index === 1) {
-      return "Chat ID";
+      const chatId = segment;
+      const chat = chats.find((c) => c.id === chatId);
+      return chat?.title || "Untitled Chat";
     }
     return segment;
   };
@@ -30,7 +34,6 @@ const Breadcrumbs = () => {
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {/* Only show "Home" if not in chat route */}
         {shouldShowHome && (
           <BreadcrumbItem>
             {pathname === "/" ? (
@@ -48,17 +51,14 @@ const Breadcrumbs = () => {
             )}
           </BreadcrumbItem>
         )}
-        {/* Render other breadcrumbs */}
         {pathnames.map((name, index) => {
           const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
           const isLast = index === pathnames.length - 1;
           const label = getBreadcrumbLabel(name, index);
-
           const isDynamicChatId = pathnames[0] === "chat" && index === 1;
 
           return (
             <React.Fragment key={routeTo}>
-              {/* Only show separator if Home is visible or not the first item */}
               {(shouldShowHome || index > 0) && <BreadcrumbSeparator />}
               <BreadcrumbItem>
                 {isLast || isDynamicChatId ? (

@@ -20,7 +20,7 @@ export function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return <Button variant="ghost" size="sm" />; // Return a placeholder to prevent layout shift
+    return <Button variant="ghost" size="sm" />;
   }
 
   return (

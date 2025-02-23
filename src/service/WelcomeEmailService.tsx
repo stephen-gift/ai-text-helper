@@ -31,10 +31,8 @@ export async function sendEmailsWithNotification(user: {
   }
 
   try {
-    // Send welcome email to user
     const welcomeResult = await sendWelcomeEmail(user);
 
-    // Send notification to sender
     const notificationResult = await sendSenderNotification(user);
 
     console.log(notificationResult);
@@ -114,7 +112,6 @@ export async function sendWelcomeEmail(user: { name: string; email: string }) {
  * @returns {Promise<Object>} - Result of the email sending operation
  */
 async function sendSenderNotification(user: { name: string; email: string }) {
-  //   const { name, email } = user;
   const htmlContent = getSenderNotificationTemplate(user);
   const textContent = getSenderNotificationText(user);
 
@@ -128,7 +125,7 @@ async function sendSenderNotification(user: { name: string; email: string }) {
     html: htmlContent,
     messageId: `<${Date.now()}@stephen-ai-text-helper.com>`,
     envelope: {
-      from: process.env.EMAIL_USER, // use the authenticated user's email
+      from: process.env.EMAIL_USER, 
       to: process.env.EMAIL_USER
     },
     headers: {

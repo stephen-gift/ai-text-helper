@@ -40,7 +40,7 @@ export default function ChatTranslator() {
 
   const {
     chats,
-
+    currentChatId,
     processingState,
     sendMessage,
     translate: tranalateMessage,
@@ -64,37 +64,45 @@ export default function ChatTranslator() {
   if (chatId && !currentChat) {
     return null;
   }
+
   const handleSendMessage = async (text: string) => {
     await sendMessage(text);
   };
 
   return (
-    <Card className="w-full max-w-7xl mx-auto flex flex-col h-full">
-      <CardHeader>
-        <CardTitle>Chat Translator</CardTitle>
-      </CardHeader>
+    <>
+      {/* <ChatUrlSync /> */}
+      <Card className="w-full max-w-7xl mx-auto flex flex-col h-full bg-white dark:bg-gray-900">
+        <CardHeader>
+          <CardTitle className="text-gray-900 dark:text-gray-100">
+            Chat Translator
+          </CardTitle>
+        </CardHeader>
 
-      <CardContent className="flex-grow overflow-y-auto p-0">
-        <MessageArea
-          messagePairs={currentChat?.messagePairs || []}
-          supportedLanguages={SUPPORTED_LANGUAGES}
-          onTranslate={tranalateMessage}
-          onSummarize={summarizeMessage}
-          isProcessingMessage={processingState.isProcessing}
-          processingState={processingState}
-        />
-      </CardContent>
+        <CardContent className="flex-grow overflow-y-auto p-0">
+          <MessageArea
+            messagePairs={currentChat?.messagePairs || []}
+            supportedLanguages={SUPPORTED_LANGUAGES}
+            onTranslate={tranalateMessage}
+            onSummarize={summarizeMessage}
+            isProcessingMessage={processingState.isProcessing}
+            processingState={processingState}
+          />
+        </CardContent>
 
-      <CardFooter className="shrink-0 p-4 flex flex-col">
-        <InputComponent
-          onSendMessage={handleSendMessage}
-          isProcessing={processingState.isProcessing}
-        />
-        <p className="text-xs text-gray-500 text-center w-full mt-2">
-          Supports {SUPPORTED_LANGUAGES.map((l) => l.name).join(", ")}{" "}
-          translation
-        </p>
-      </CardFooter>
-    </Card>
+        <CardFooter className="shrink-0 p-4 flex flex-col">
+          <InputComponent
+            onSendMessage={handleSendMessage}
+            isProcessing={processingState.isProcessing}
+            currentChatId={currentChatId}
+            urlChatId={chatId}
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center w-full mt-2">
+            Supports {SUPPORTED_LANGUAGES.map((l) => l.name).join(", ")}{" "}
+            translation
+          </p>
+        </CardFooter>
+      </Card>
+    </>
   );
 }

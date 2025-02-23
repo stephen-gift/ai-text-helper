@@ -1,13 +1,14 @@
-import { usePathname } from "next/navigation";
-import useChatStore from "../../../store";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu
 } from "../ui/sidebar";
-import { ScrollArea } from "../ui/scroll-area";
+import ChatSearch from "./ChatSearch";
 import { ChatHistoryItem } from "./ChatHistoryItem";
+import useChatStore from "../../../store";
+import { usePathname } from "next/navigation";
 
 export const ChatHistory = () => {
   const { chats } = useChatStore();
@@ -22,11 +23,10 @@ export const ChatHistory = () => {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-gray-400 uppercase text-xs tracking-wider">
-        Chat History
-      </SidebarGroupLabel>
-      <SidebarGroupContent className="mt-2 flex-1">
-        <ScrollArea className="h-[calc(100vh-500px)]">
+      <SidebarGroupLabel>Chat History</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <ChatSearch />
+        <ScrollArea className="h-[calc(100vh-200px)]">
           <SidebarMenu>
             {chatHistory.map((chat) => (
               <ChatHistoryItem key={chat.id} {...chat} />

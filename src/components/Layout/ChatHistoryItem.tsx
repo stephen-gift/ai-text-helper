@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { useState } from "react";
 import useChatStore from "../../../store";
 import { toast } from "sonner";
+import { Input } from "../ui/input";
 
 interface ChatHistoryItemProps {
   id: string;
@@ -66,8 +67,8 @@ export const ChatHistoryItem = ({
   };
 
   return (
-    <SidebarMenuItem>
-      <div className="group relative flex items-center w-full">
+    <SidebarMenuItem className="group">
+      <div className="relative flex items-center w-full">
         <SidebarMenuButton
           asChild={!isEditing}
           isActive={isActive}
@@ -77,11 +78,11 @@ export const ChatHistoryItem = ({
         >
           {isEditing ? (
             <div className="flex items-center h-full">
-              <input
+              <Input
                 type="text"
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                className={`w-full bg-transparent border-none focus:outline-none ${
+                className={`w-full bg-transparent border-none focus:outline-none focus:ring-0 focus-visible:ring-0 ${
                   isActive ? "text-black font-semibold" : "text-gray-400"
                 }`}
                 autoFocus
