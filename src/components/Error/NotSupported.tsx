@@ -200,7 +200,7 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
 const VideoDemo = () => {
   // Convert Google Drive sharing URL to embed URL
   const getEmbedUrl = () => {
-    return `https://drive.google.com/file/d/${process.env.NEXT_PUBLIC_GOOGLE_DRIVE_VIDEO_ID}/preview`;
+    return `https://drive.google.com/file/d/1Yx8S_5vnAnqhXzgllI3xGMaKj2PA_1yd/preview`;
   };
 
   return (
