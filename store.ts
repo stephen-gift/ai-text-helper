@@ -42,9 +42,9 @@ export interface Chat {
 }
 
 interface SummarizationPreferences {
-  defaultType: "key-points" | "tl;dr" | "teaser" | "headline";
+  defaultType: "key-points" | "tldr" | "teaser" | "headline";
   defaultLength: "short" | "medium" | "long";
-  defaultFormat: "markdown" | "plain";
+  defaultFormat: "markdown" | "plain-text";
   customPrompt?: string;
 }
 
@@ -81,7 +81,7 @@ interface ChatState {
   translate: (responseId: string, targetLanguage: string) => Promise<void>;
   summarize: (
     responseId: string,
-    options?: { type?: "key-points" | "tl;dr" | "teaser" | "headline" }
+    options?: { type?: "key-points" | "tldr" | "teaser" | "headline" }
   ) => Promise<void>;
   summarizationPreferences: SummarizationPreferences;
   updateSummarizationPreferences: (
@@ -338,9 +338,9 @@ const useChatStore = create<ChatState>()(
       summarize: async (
         responseId: string,
         options?: {
-          type?: "key-points" | "tl;dr" | "teaser" | "headline";
+          type?: "key-points" | "tldr" | "teaser" | "headline";
           length?: "short" | "medium" | "long";
-          format?: "markdown" | "plain";
+          format?: "markdown" | "plain-text";
         }
       ) => {
         const state = get();

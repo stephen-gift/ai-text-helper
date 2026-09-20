@@ -38,12 +38,7 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
       {
         title: "Update Chrome to the latest version",
         details:
-          "Your browser must be updated to Chrome version 131 or newer. Go to Chrome menu (⋮) → Help → About Google Chrome → Update if available"
-      },
-      {
-        title: "Enable Translation API",
-        details:
-          "Type 'chrome://flags/#translation-api' in your address bar → Find 'Translation API' → Select 'Enabled' → Click 'Relaunch'"
+          "Your browser must be updated to Chrome version 138 or newer, where the Translator API shipped as stable. Go to Chrome menu (⋮) → Help → About Google Chrome → Update if available"
       },
       {
         title: "Set up your preferred languages",
@@ -65,17 +60,7 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
       {
         title: "Update Chrome to the latest version",
         details:
-          "First ensure you have the latest version of Chrome installed. You can check this by clicking the three dots menu → Help → About Google Chrome"
-      },
-      {
-        title: "Enable Language Detection API",
-        details:
-          "Type 'chrome://flags/#language-detection-api' in your address bar → Find 'Language Detection API' → Select 'Enabled' from the dropdown menu"
-      },
-      {
-        title: "Restart Chrome",
-        details:
-          "Click the 'Relaunch' button that appears at the bottom of your screen after enabling the feature"
+          "First ensure you have Chrome 138 or newer installed, where the Language Detector API shipped as stable. You can check this by clicking the three dots menu → Help → About Google Chrome"
       },
       {
         title: "Check available disk space",
@@ -90,24 +75,9 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
     ],
     summarization: [
       {
-        title: "Use Chrome Canary",
+        title: "Update Chrome to the latest version",
         details:
-          "The Summarizer API requires Chrome Canary browser during the trial period"
-      },
-      {
-        title: "Enable Optimization Guide",
-        details:
-          "Type 'chrome://flags/' in your address bar → Find 'Optimization Guide On Device' → Select 'Enabled ByPassPerfRequirement' → Click 'Relaunch'"
-      },
-      {
-        title: "Download Optimization Guide",
-        details:
-          "Type 'chrome://components/' in your address bar → Find 'Optimization Guide On Device Model' → Click 'Check for update' → Wait for the 3GB download (approximately 40 minutes)"
-      },
-      {
-        title: "Enable Summarization API",
-        details:
-          "Type 'chrome://flags/#summarization-api-for-gemini-nano' in your address bar → Select 'Enabled' → Click 'Relaunch'"
+          "The Summarizer API is available in Chrome Stable as of Chrome 138 — no Canary build or flags required. Go to Chrome menu (⋮) → Help → About Google Chrome → Update if available"
       },
       {
         title: "Test API Support in Console",
@@ -115,9 +85,9 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
           "Press F12 or right-click anywhere → Select 'Inspect' → Click 'Console' tab → Copy and paste the test code provided below"
       },
       {
-        title: "Download Summarizer Model",
+        title: "Download the on-device model",
         details:
-          "If the API is supported, paste the download code in the console → Wait for the 2.35GB model download (approximately 30 minutes). You can download this alongside the Optimization Guide"
+          "If the API is supported but unavailable, the first summarization request triggers a one-time Gemini Nano model download. Keep the tab open and stay on a stable connection while it downloads."
       },
       {
         title: "Check English content",
@@ -131,15 +101,25 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
     summarization: [
       {
         title: "Test if API is supported:",
-        code: "if ('ai' in self && 'summarizer' in self.ai) {\n  console.log('Summarizer API is supported');\n}"
+        code: "if ('Summarizer' in self) {\n  console.log('Summarizer API is supported');\n}"
       },
       {
         title: "Download and monitor progress:",
-        code: "const summarizer = await ai.summarizer.create({\n  monitor(m) {\n    m.addEventListener('downloadprogress', (e) => {\n      console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);\n    });\n  }\n});"
+        code: "const summarizer = await Summarizer.create({\n  monitor(m) {\n    m.addEventListener('downloadprogress', (e) => {\n      console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);\n    });\n  }\n});"
       }
     ],
-    translation: [],
-    detection: []
+    translation: [
+      {
+        title: "Test if API is supported:",
+        code: "if ('Translator' in self) {\n  console.log('Translator API is supported');\n}"
+      }
+    ],
+    detection: [
+      {
+        title: "Test if API is supported:",
+        code: "if ('LanguageDetector' in self) {\n  console.log('Language Detector API is supported');\n}"
+      }
+    ]
   };
 
   return (
@@ -165,7 +145,7 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
         </div>
       ))}
 
-      {type === "summarization" && (
+      {codeExamples[type].length > 0 && (
         <div className="mt-6 space-y-4">
           <h6 className="font-medium text-base sm:text-lg dark:text-gray-100">
             Test Codes for Console
@@ -183,14 +163,16 @@ const TroubleshootingSteps = ({ type }: TroubleshootingStepsProps) => {
               </pre>
             </div>
           ))}
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-            <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
-              <strong>Note:</strong> You can download both the Optimization
-              Guide (3GB) and Summarizer API model (2.35GB) at the same time to
-              save time. Total download time will be approximately 40 minutes
-              with a good internet connection.
-            </p>
-          </div>
+          {type === "summarization" && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+              <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
+                <strong>Note:</strong> The on-device Gemini Nano model (a few
+                GB) downloads automatically the first time an API is used on
+                this device. Keep the tab open on a stable connection while it
+                downloads.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

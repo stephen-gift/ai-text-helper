@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  AIAvailability,
+  AIDownloadMonitor,
   DetectionResult,
   LanguageDetectorInstance,
   LanguageDetectorOptions,
@@ -20,49 +22,45 @@ import React, {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-interface TranslationAPI {
-  createTranslator: (options: {
+interface TranslatorAPI {
+  availability: (options: {
     sourceLanguage: string;
     targetLanguage: string;
+  }) => Promise<AIAvailability>;
+  create: (options: {
+    sourceLanguage: string;
+    targetLanguage: string;
+    monitor?: (monitor: AIDownloadMonitor) => void;
   }) => Promise<TranslatorInstance>;
 }
 
+interface LanguageDetectorAPI {
+  availability: (options?: LanguageDetectorOptions) => Promise<AIAvailability>;
+  create: (
+    options?: LanguageDetectorOptions & {
+      monitor?: (monitor: AIDownloadMonitor) => void;
+    }
+  ) => Promise<LanguageDetectorInstance>;
+}
+
+interface SummarizerAPI {
+  availability: (
+    options?: Pick<SummarizationOptions, "type" | "format" | "length">
+  ) => Promise<AIAvailability>;
+  create: (
+    options?: SummarizationOptions & {
+      monitor?: (monitor: AIDownloadMonitor) => void;
+    }
+  ) => Promise<SummarizerInstance>;
+}
+
 interface CustomWindow extends Window {
-  translation?: TranslationAPI;
+  Translator?: TranslatorAPI;
+  LanguageDetector?: LanguageDetectorAPI;
+  Summarizer?: SummarizerAPI;
 }
 
 declare const window: CustomWindow;
-
-interface AIFactoryCapabilities {
-  available: "no" | "readily" | "after-download";
-  requirements?: {
-    storage?: number;
-    memory?: number;
-    processingPower?: "low" | "medium" | "high";
-  };
-}
-
-interface AIFactory<T> {
-  capabilities?: () => Promise<AIFactoryCapabilities>;
-  availability?: () => Promise<{
-    status: "available" | "unavailable" | "downloading";
-    progress?: number;
-  }>;
-  create: (
-    options?: SummarizationOptions | LanguageDetectorOptions
-  ) => Promise<T>;
-}
-
-interface AI {
-  languageDetector?: AIFactory<LanguageDetectorInstance>;
-  summarizer?: AIFactory<SummarizerInstance>;
-  translator?: AIFactory<TranslatorInstance>;
-}
-
-interface CustomWindow extends Window {
-  ai?: AI;
-}
-
 declare const self: CustomWindow;
 
 interface TranslationContextType {
@@ -149,17 +147,9 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const checkAvailability = () => {
-      const translationApiExists = "ai" in self;
-      const translatorExists =
-        translationApiExists && "translator" in (self.ai ?? {});
-      const detectorExists =
-        translationApiExists && "languageDetector" in (self.ai ?? {});
-      const summarizerExists =
-        translationApiExists && "summarizer" in (self.ai ?? {});
-
-      setIsTranslationSupported(translatorExists);
-      setIsDetectionSupported(detectorExists);
-      setIsSummarizationSupported(summarizerExists);
+      setIsTranslationSupported("Translator" in self);
+      setIsDetectionSupported("LanguageDetector" in self);
+      setIsSummarizationSupported("Summarizer" in self);
     };
 
     checkAvailability();
@@ -260,13 +250,32 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           return null;
         }
 
-        if (!window.translation) {
+        if (!window.Translator) {
           throw new Error("Translation API is not available");
         }
 
-        const translator = await window.translation.createTranslator({
+        const availability = await window.Translator.availability({
           sourceLanguage,
           targetLanguage
+        });
+        if (availability === "unavailable") {
+          showErrorToast(
+            "Unsupported language pair",
+            `Translation from ${languageTagToHumanReadable(
+              sourceLanguage
+            )} to ${languageTagToHumanReadable(targetLanguage)} isn't available on this device.`
+          );
+          return null;
+        }
+
+        const translator = await window.Translator.create({
+          sourceLanguage,
+          targetLanguage,
+          monitor(m) {
+            m.addEventListener("downloadprogress", (e) => {
+              console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);
+            });
+          }
         });
 
         setTranslatorInstances((prev) => {
@@ -364,16 +373,23 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           return detectorInstance;
         }
 
-        if (!self.ai || !self.ai.languageDetector) {
+        if (!self.LanguageDetector) {
           throw new Error("Language Detection API is not available");
         }
 
         const options: LanguageDetectorOptions = {};
         if (expectedLanguages && expectedLanguages.length > 0) {
-          options.expectedLanguages = expectedLanguages;
+          options.expectedInputLanguages = expectedLanguages;
         }
 
-        const detector = await self.ai.languageDetector.create(options);
+        const detector = await self.LanguageDetector.create({
+          ...options,
+          monitor(m) {
+            m.addEventListener("downloadprogress", (e) => {
+              console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);
+            });
+          }
+        });
         setDetectorInstance(detector);
 
         showSuccessToast(
@@ -486,7 +502,7 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           return null;
         }
 
-        const summarizerFactory = self.ai?.summarizer;
+        const summarizerFactory = self.Summarizer;
         if (!summarizerFactory) {
           showErrorToast(
             "Summarization API unavailable",
@@ -499,8 +515,12 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           return null;
         }
 
-        const available = (await summarizerFactory.capabilities?.())?.available;
-        if (available === "no") {
+        const available: AIAvailability = await summarizerFactory.availability({
+          type: options.type,
+          format: options.format,
+          length: options.length
+        });
+        if (available === "unavailable") {
           showErrorToast(
             "Summarization API not available",
             "The Summarization API is not usable on this device.",
@@ -512,14 +532,14 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
           return null;
         }
 
-        const summarizer = await summarizerFactory.create(options);
-
-        if (available !== "readily") {
-          summarizer.addEventListener("downloadprogress", (e) => {
-            console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);
-          });
-          await summarizer.ready;
-        }
+        const summarizer = await summarizerFactory.create({
+          ...options,
+          monitor(m) {
+            m.addEventListener("downloadprogress", (e) => {
+              console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);
+            });
+          }
+        });
 
         setSummarizerInstance(summarizer);
 

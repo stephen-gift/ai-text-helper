@@ -21,9 +21,6 @@ export const metadata: Metadata = {
   description:
     "An AI-powered tool for text summarization, translation, and language detection using Chrome's AI APIs.",
   other: {
-    "origin-trial": process.env.NEXT_PUBLIC_ORIGIN_TRIAL || "",
-    "origin-trial-2": process.env.NEXT_PUBLIC_ORIGIN_TRIAL_2 || "",
-    "origin-trial-3": process.env.NEXT_PUBLIC_ORIGIN_TRIAL_3 || "",
     "apple-mobile-web-app-title": "TextHelper"
   }
 };

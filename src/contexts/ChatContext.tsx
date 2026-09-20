@@ -69,7 +69,7 @@ interface ChatContextType {
   ) => Promise<void>;
   handleSummarize: (
     responseId: string,
-    options?: { type?: "key-points" | "tl;dr" | "teaser" | "headline" }
+    options?: { type?: "key-points" | "tldr" | "teaser" | "headline" }
   ) => Promise<void>;
   isProcessingMessage: boolean;
   setMessageProcessingState: (
@@ -277,7 +277,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const handleSummarize = useCallback(
     async (
       responseId: string,
-      options?: { type?: "key-points" | "tl;dr" | "teaser" | "headline" }
+      options?: { type?: "key-points" | "tldr" | "teaser" | "headline" }
     ) => {
       setMessageProcessingState(true, "summarizing", responseId);
 

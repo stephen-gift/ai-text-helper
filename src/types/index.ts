@@ -17,16 +17,24 @@ export interface SummarizationProgressEvent extends Event {
 }
 
 export interface SummarizerInstance {
-  addEventListener: (
-    event: "downloadprogress",
-    callback: (event: SummarizationProgressEvent) => void
-  ) => void;
-  ready: Promise<void>;
   summarize: (text: string, options?: { context?: string }) => Promise<string>;
   summarizeStreaming?: (
     text: string,
     options?: { context?: string }
   ) => AsyncIterable<string>;
+}
+
+export type AIAvailability =
+  | "unavailable"
+  | "downloadable"
+  | "downloading"
+  | "available";
+
+export interface AIDownloadMonitor {
+  addEventListener: (
+    event: "downloadprogress",
+    callback: (event: SummarizationProgressEvent) => void
+  ) => void;
 }
 
 export interface DetectionResult {
@@ -37,15 +45,13 @@ export interface DetectionResult {
 
 export interface SummarizationOptions {
   sharedContext?: string;
-  type?: "key-points" | "tl;dr" | "teaser" | "headline";
+  type?: "key-points" | "tldr" | "teaser" | "headline";
   format?: "markdown" | "plain-text";
   length?: "short" | "medium" | "long";
 }
 
 export interface LanguageDetectorOptions {
-  expectedLanguages?: string[];
-  confidenceThreshold?: number;
-  mode?: "fast" | "accurate";
+  expectedInputLanguages?: string[];
 }
 
 export interface SummarizationResult {

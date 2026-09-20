@@ -31,7 +31,7 @@ const SummarizationSettings = () => {
               updateSummarizationPreferences({
                 defaultType: value as
                   | "key-points"
-                  | "tl;dr"
+                  | "tldr"
                   | "teaser"
                   | "headline"
               })
@@ -51,7 +51,7 @@ const SummarizationSettings = () => {
                 Key Points
               </SelectItem>
               <SelectItem
-                value="tl;dr"
+                value="tldr"
                 className="hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 TL;DR
@@ -129,7 +129,7 @@ const SummarizationSettings = () => {
           value={summarizationPreferences.defaultFormat}
           onValueChange={(value) =>
             updateSummarizationPreferences({
-              defaultFormat: value as "markdown" | "plain"
+              defaultFormat: value as "markdown" | "plain-text"
             })
           }
         >
